@@ -36,7 +36,6 @@ public class AuthController : ControllerBase
 			new Claim(ClaimTypes.Role, nameof(DataDictionary.Admin))
 		};
 
-		//edit
 		var issuer = _configuration["Jwt:Issuer"];
 		var audience = _configuration["Jwt:Audience"];
 		var secretKey = _configuration["Jwt:SecretKey"];

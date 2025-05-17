@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using API.Middlewares;
 
 namespace API;
 
@@ -130,6 +131,8 @@ internal static class Program
 		app.UseAuthentication();
 		app.UseAuthorization();
 
+		app.UseCultureCookie();
+		app.UseGlobalException();
 
 		app.MapControllers();
 
