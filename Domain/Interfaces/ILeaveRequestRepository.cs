@@ -7,7 +7,13 @@ namespace Domain.Interfaces;
 
 public interface ILeaveRequestRepository
 {
+	Task SaveChangesAsync();
+
+	Task AddAsync(LeaveRequest leaveRequest);
+
 	Task<LeaveRequest?> GetByIdAsync(Guid id);
 
 	Task<List<LeaveRequest>> GetAllAsync();
+
+	Task<List<LeaveRequest>> GetByEmployeeIdAsync(Guid id);
 }

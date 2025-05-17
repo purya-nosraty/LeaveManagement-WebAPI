@@ -1,41 +1,43 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
-using Domain.Entities;
-using Domain.Enums;
-using Domain.Interfaces;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using Domain.Enums;
+using Domain.Entities;
+using Application.DTOs;
+using Domain.Interfaces;
+using Application.Interfaces;
 using System.Threading.Tasks;
-using System;
+using System.Collections.Generic;
 
 namespace Application.Services;
 
-public class LeaveRequestService : ILeaveRequestService
+public class LeaveRequestService(ILeaveRequestRepository leaveRequestRepo) : ILeaveRequestService
 {
-	private readonly ILeaveRequestRepository _leaveRepo;
-	private readonly IEmployeeRepository _empRepo;
+	private readonly ILeaveRequestRepository _leaveRequestRepo = leaveRequestRepo;
 
-	public LeaveRequestService(ILeaveRequestRepository leaveRepo, IEmployeeRepository empRepo)
-	{
-		_leaveRepo = leaveRepo;
-		_empRepo = empRepo;
-	}
 
-	public async Task<Guid> CreateAsync(CreateLeaveRequestDto dto)
+	public async Task CreateAsync(CreateLeaveRequestDto dto)
 	{
 		if (dto.ToDate < dto.FromDate)
+		{
 			throw new ArgumentException("ToDate must be after FromDate");
+		}
 
-		//if (dto.SubstituteEmployeeId.HasValue)
-		//{
-		//	var sub = await _empRepo.GetByIdAsync(dto.SubstituteEmployeeId.Value)
-		//		?? throw new KeyNotFoundException("Substitute employee not found");
-		//	var overlaps = await _leaveRepo.GetByEmployeeIdAsync(dto.SubstituteEmployeeId.Value);
-		//	if (overlaps.Any(l => l.Status != LeaveStatus.Rejected
-		//						  && l.FromDate <= dto.ToDate
-		//						  && l.ToDate >= dto.FromDate))
-		//		throw new InvalidOperationException("Substitute is on leave during this period");
-		//}
+		if (dto.SubstituteEmployeeId.HasValue)
+		{
+			var overlaps = await _leaveRequestRepo
+				.GetByEmployeeIdAsync(dto.SubstituteEmployeeId.Value);
+
+			var unVerifiedSubstitute = overlaps
+				.Any(l => l.Status != LeaveStatus.Rejected
+					&& l.FromDate <= dto.ToDate
+					&& l.ToDate >= dto.FromDate
+				);
+
+			if (unVerifiedSubstitute)
+			{
+				throw new InvalidOperationException("Substitute is on leave during this period");
+			}
+		}
 
 		var entity = new LeaveRequest
 		{
@@ -48,61 +50,63 @@ public class LeaveRequestService : ILeaveRequestService
 			SubstituteEmployeeId = dto.SubstituteEmployeeId
 		};
 
-		//await _leaveRepo.AddAsync(entity);
-		//await _leaveRepo.SaveChangesAsync();
-
-		return entity.Id;
+		await _leaveRequestRepo.AddAsync(entity);
+		await _leaveRequestRepo.SaveChangesAsync();
 	}
 
-	//public async Task<IEnumerable<LeaveRequestDto>> GetByEmployeeAsync(Guid employeeId)
-	//{
-	//	var list = await _leaveRepo.GetByEmployeeIdAsync(employeeId);
-	//	return list.Select(l => new LeaveRequestDto(
-	//		l.Id,
-	//		l.EmployeeId,
-	//		l.FromDate,
-	//		l.ToDate,
-	//		l.Reason,
-	//		l.Status.ToString(),
-	//		l.SubstituteEmployeeId));
-	//}
+	public async Task<IEnumerable<LeaveRequestDto>> GetByEmployeeAsync(Guid employeeId)
+	{
+		var list = await _leaveRequestRepo.GetByEmployeeIdAsync(employeeId);
+
+		return list.Select(t =>
+			new LeaveRequestDto(
+				t.Id,
+				t.EmployeeId,
+				t.FromDate,
+				t.ToDate,
+				t.Reason,
+				t.Status.ToString(),
+				t.SubstituteEmployeeId
+			)
+		);
+	}
 
 	public async Task<IEnumerable<LeaveRequestDto>> GetAllAsync()
 	{
-		var list = await _leaveRepo.GetAllAsync();
-		return list.Select(l => new LeaveRequestDto(
-			l.Id,
-			l.EmployeeId,
-			l.FromDate,
-			l.ToDate,
-			l.Reason,
-			l.Status.ToString(),
-			l.SubstituteEmployeeId));
+		var list = await _leaveRequestRepo.GetAllAsync();
+
+		return list.Select(t =>
+			new LeaveRequestDto(
+				t.Id,
+				t.EmployeeId,
+				t.FromDate,
+				t.ToDate,
+				t.Reason,
+				t.Status.ToString(),
+				t.SubstituteEmployeeId
+			)
+		);
 	}
 
 	public async Task ApproveAsync(Guid requestId)
 	{
-		var leave = await _leaveRepo.GetByIdAsync(requestId)
+		var leave = await _leaveRequestRepo.GetByIdAsync(requestId)
 			?? throw new KeyNotFoundException("Leave request not found");
-		//leave.Status = LeaveStatus.Approved;
-		//await _leaveRepo.SaveChangesAsync();
+
+		leave.Status = LeaveStatus.Approved;
+
+		await
+			_leaveRequestRepo.SaveChangesAsync();
 	}
 
 	public async Task RejectAsync(Guid requestId)
 	{
-		var leave = await _leaveRepo.GetByIdAsync(requestId)
+		var leave = await _leaveRequestRepo.GetByIdAsync(requestId)
 			?? throw new KeyNotFoundException("Leave request not found");
-		//leave.Status = LeaveStatus.Rejected;
-		//await _leaveRepo.SaveChangesAsync();
-	}
 
-	Task ILeaveRequestService.CreateAsync(CreateLeaveRequestDto dto)
-	{
-		return CreateAsync(dto);
-	}
+		leave.Status = LeaveStatus.Rejected;
 
-	Task<IEnumerable<LeaveRequestDto>> ILeaveRequestService.GetByEmployeeAsync(Guid employeeId)
-	{
-		throw new NotImplementedException();
+		await
+			_leaveRequestRepo.SaveChangesAsync();
 	}
 }

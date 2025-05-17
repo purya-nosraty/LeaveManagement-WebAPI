@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data;
@@ -14,6 +15,16 @@ public class LeaveRequestRepository(AppDbContext appDbContext) : ILeaveRequestRe
 
 
 	#region Methods
+	public async Task SaveChangesAsync()
+	{
+		await _appDbContext.SaveChangesAsync();
+	}
+
+	public async Task AddAsync(LeaveRequest leaveRequest)
+	{
+		await _appDbContext.LeaveRequests.AddAsync(leaveRequest);
+	}
+
 	public async Task<LeaveRequest?> GetByIdAsync(Guid id)
 	{
 		return await
@@ -27,6 +38,15 @@ public class LeaveRequestRepository(AppDbContext appDbContext) : ILeaveRequestRe
 		return await
 			_appDbContext.LeaveRequests
 				.Include(l => l.Employee)
+				.ToListAsync();
+	}
+
+	public async Task<List<LeaveRequest>> GetByEmployeeIdAsync(Guid id)
+	{
+		return await
+			_appDbContext.LeaveRequests
+				.Include(l => l.Employee)
+				.Where(l => l.EmployeeId == id)
 				.ToListAsync();
 	}
 	#endregion /Methods
