@@ -42,6 +42,8 @@ public static class Utility
 		public const int ReasonMinLength = 10;
 
 		public const int ReasonMaxLength = 3000;
+
+		public const string DefaultConnection = "DefaultConnection";
 	}
 	#endregion /Consts
 
