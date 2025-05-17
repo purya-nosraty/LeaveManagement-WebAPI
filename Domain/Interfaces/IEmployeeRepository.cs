@@ -9,11 +9,9 @@ public interface IEmployeeRepository
 {
 	Task SaveChangesAsync();
 
-	Task AddAsync(LeaveRequest request);
+	Task AddAsync(Employee employee);
 
-	Task<List<LeaveRequest>> GetAllAsync();
+	Task<List<Employee>> GetAllAsync();
 
-	Task<LeaveRequest?> GetByIdAsync(Guid id);
-
-	Task<List<LeaveRequest>> GetByEmployeeIdAsync(Guid employeeId);
+	Task<Employee?> GetByIdAsync(Guid id);
 }

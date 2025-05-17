@@ -8,76 +8,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class EmployeeRepository : IEmployeeRepository
+public class EmployeeRepository(AppDbContext appDbContext) : IEmployeeRepository
 {
-	private readonly AppDbContext _context;
+	private readonly AppDbContext _appDbContext = appDbContext;
 
-	public EmployeeRepository(AppDbContext context)
-	{
-		_context = context;
-	}
 
-	public async Task<Employee?> GetByIdAsync(Guid id)
+	#region Methods
+	public async Task SaveChangesAsync()
 	{
-		return await _context.Employees
-			.Include(e => e.LeaveRequests)
-			.FirstOrDefaultAsync(e => e.Id == id);
-	}
-
-	public async Task<List<Employee>> GetAllAsync()
-	{
-		return await _context.Employees
-			.Include(e => e.LeaveRequests)
-			.ToListAsync();
+		await _appDbContext.SaveChangesAsync();
 	}
 
 	public async Task AddAsync(Employee employee)
 	{
-		await _context.Employees.AddAsync(employee);
+		await _appDbContext.Employees.AddAsync(employee);
 	}
 
-	//public async Task UpdateAsync(Employee employee)
-	//{
-	//	_context.Employees.Update(employee);
-	//	await Task.CompletedTask;
-	//}
-
-	//public async Task DeleteAsync(Guid id)
-	//{
-	//	var entity = await _context.Employees.FindAsync(id);
-	//	if (entity != null)
-	//	{
-	//		_context.Employees.Remove(entity);
-	//	}
-	//}
-	public async Task<Employee?> GetByEmployeeIdAsync(Guid employeeId)
+	public async Task<List<Employee>> GetAllAsync()
 	{
-		return await _context.Employees
-			.Include(e => e.LeaveRequests)
-			.FirstOrDefaultAsync(e => e.Id == employeeId);
-	}
-	public async Task SaveChangesAsync()
-	{
-		await _context.SaveChangesAsync();
+		return await
+			_appDbContext.Employees
+				.Include(current => current.LeaveRequests)
+				.ToListAsync();
 	}
 
-	Task<LeaveRequest?> IEmployeeRepository.GetByIdAsync(Guid id)
+	public async Task<Employee?> GetByIdAsync(Guid id)
 	{
-		throw new NotImplementedException();
+		return await
+			_appDbContext.Employees
+				.Include(current => current.LeaveRequests)
+				.FirstOrDefaultAsync(current => current.Id == id);
 	}
-
-	Task<List<LeaveRequest>> IEmployeeRepository.GetAllAsync()
-	{
-		throw new NotImplementedException();
-	}
-
-	Task IEmployeeRepository.AddAsync(LeaveRequest request)
-	{
-		throw new NotImplementedException();
-	}
-
-	Task<List<LeaveRequest>> IEmployeeRepository.GetByEmployeeIdAsync(Guid employeeId)
-	{
-		throw new NotImplementedException();
-	}
+	#endregion /Methods
 }

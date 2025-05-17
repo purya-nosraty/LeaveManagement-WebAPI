@@ -7,7 +7,7 @@ namespace Domain.Interfaces;
 
 public interface ILeaveRequestRepository
 {
-	Task<Employee?> GetByIdAsync(Guid id);
+	Task<LeaveRequest?> GetByIdAsync(Guid id);
 
 	Task<List<LeaveRequest>> GetAllAsync();
 }
