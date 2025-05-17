@@ -4,12 +4,12 @@ namespace Domain.Enums;
 
 public enum LeaveStatus
 {
-	[Display(Description = "در انتظار تایید")]
+	[Display(Description = nameof(Shared.Resources.DataDictionary.Pending))]
 	Pending = 0,
 
-	[Display(Description = "تایید شده")]
+	[Display(Description = nameof(Shared.Resources.DataDictionary.Approved))]
 	Approved = 1,
 
-	[Display(Description = "مردود")]
+	[Display(Description = nameof(Shared.Resources.DataDictionary.Rejected))]
 	Rejected = 2,
 }

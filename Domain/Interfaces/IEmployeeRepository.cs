@@ -7,9 +7,13 @@ namespace Domain.Interfaces;
 
 public interface IEmployeeRepository
 {
-	Task<LeaveRequest?> GetByIdAsync(Guid id);
-	Task<List<LeaveRequest>> GetAllAsync();
-	Task AddAsync(LeaveRequest request);
-	Task<List<LeaveRequest>> GetByEmployeeIdAsync(Guid employeeId);
 	Task SaveChangesAsync();
+
+	Task AddAsync(LeaveRequest request);
+
+	Task<List<LeaveRequest>> GetAllAsync();
+
+	Task<LeaveRequest?> GetByIdAsync(Guid id);
+
+	Task<List<LeaveRequest>> GetByEmployeeIdAsync(Guid employeeId);
 }
