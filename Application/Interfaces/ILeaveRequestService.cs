@@ -8,13 +8,13 @@ namespace Application.Interfaces;
 public interface ILeaveRequestService
 {
 
-	Task CreateAsync(CreateLeaveRequestDto dto);
+    Task<Guid> CreateAsync(CreateLeaveRequestDto dto);
 
-	Task<IEnumerable<LeaveRequestDto>> GetByEmployeeAsync(Guid employeeId);
+    Task<IEnumerable<LeaveRequestDto>> GetByEmployeeAsync(Guid employeeId);
 
-	Task<IEnumerable<LeaveRequestDto>> GetAllAsync();
+    Task<IEnumerable<LeaveRequestDto>> GetAllAsync();
 
-	Task ApproveAsync(Guid requestId);
+    Task ApproveAsync(Guid requestId);
 
-	Task RejectAsync(Guid requestId);
+    Task RejectAsync(Guid requestId);
 }
